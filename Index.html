@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Club Edgemore Karaoke</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%8E%A4</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Monoton&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+  :root{
+    --bg:#0d0a1a;
+    --bg2:#160f2b;
+    --panel:#1b1436;
+    --panel2:#241a47;
+    --pink:#ff2d95;
+    --purple:#8b2fe0;
+    --cyan:#2de3ff;
+    --gold:#ffd23f;
+    --text:#f4f0ff;
+    --muted:#a99ecb;
+    --danger:#ff4d5e;
+    --good:#2de88a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(139,47,224,0.35), transparent 40%),
+      radial-gradient(circle at 85% 0%, rgba(45,227,255,0.25), transparent 40%),
+      radial-gradient(circle at 50% 100%, rgba(255,45,149,0.25), transparent 45%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Manrope', system-ui, -apple-system, sans-serif;
+    padding:24px;
+  }
+  .wrap{max-width:1200px;margin:0 auto;}
+  header{
+    text-align:center;
+    margin-bottom:24px;
+  }
+  header h1{
+    font-family:'Monoton', cursive, system-ui;
+    font-weight:400;
+    font-size:2.4rem;
+    margin:0;
+    letter-spacing:2px;
+    background:linear-gradient(90deg,var(--pink),var(--gold),var(--cyan));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    text-shadow:0 0 30px rgba(255,45,149,0.25);
+  }
+  header p{color:var(--muted);margin:4px 0 0;}
+  .grid{
+    display:grid;
+    grid-template-columns:1.1fr 1fr;
+    gap:20px;
+  }
+  @media (max-width:900px){ .grid{grid-template-columns:1fr;} }
+  .card{
+    background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid rgba(255,255,255,0.06);
+    border-radius:16px;
+    padding:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.35);
+  }
+  .card h2{
+    margin:0 0 14px;
+    font-size:1.1rem;
+    color:var(--gold);
+    letter-spacing:0.5px;
+    display:flex;align-items:center;gap:8px;
+  }
+  label{display:block;font-size:0.8rem;color:var(--muted);margin:10px 0 4px;}
+  input[type=text], select{
+    width:100%;
+    padding:10px 12px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.12);
+    background:#0f0a22;
+    color:var(--text);
+    font-size:0.95rem;
+  }
+  input[type=text]:focus, select:focus{outline:2px solid var(--pink);}
+  button{
+    cursor:pointer;
+    border:none;
+    border-radius:10px;
+    font-weight:600;
+    font-size:0.9rem;
+    padding:10px 16px;
+    transition:transform 0.1s ease, opacity 0.15s ease;
+  }
+  button:active{transform:scale(0.97);}
+  button:disabled{opacity:0.4;cursor:not-allowed;}
+  .btn-primary{background:linear-gradient(90deg,var(--pink),var(--purple));color:white;}
+  .btn-secondary{background:#2a2153;color:var(--text);}
+  .btn-good{background:var(--good);color:#04321d;}
+  .btn-danger{background:transparent;color:var(--danger);border:1px solid rgba(255,77,94,0.4);}
+  .btn-ghost{background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,0.12);}
+  .row{display:flex;gap:8px;flex-wrap:wrap;}
+  .results{margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;}
+  .result-item{
+    display:flex;gap:10px;align-items:center;
+    background:#120c26;border:1px solid rgba(255,255,255,0.06);
+    border-radius:10px;padding:8px;cursor:pointer;
+  }
+  .result-item:hover{border-color:var(--pink);}
+  .result-item img{width:88px;height:66px;object-fit:cover;border-radius:6px;flex-shrink:0;}
+  .result-item .rtitle{font-size:0.85rem;line-height:1.3;}
+  .result-item .rchannel{font-size:0.75rem;color:var(--muted);}
+  .queue-list{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow-y:auto;padding-right:4px;}
+  .queue-item{
+    display:flex;gap:10px;align-items:center;
+    background:#120c26;border:1px solid rgba(255,255,255,0.08);
+    border-radius:12px;padding:10px;
+  }
+  .queue-item.next{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset;}
+  .queue-item img{width:70px;height:52px;object-fit:cover;border-radius:6px;flex-shrink:0;}
+  .queue-item .meta{flex:1;min-width:0;}
+  .queue-item .who{font-weight:700;color:var(--cyan);}
+  .queue-item .song{font-size:0.85rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .queue-item .pos{
+    width:26px;height:26px;border-radius:50%;
+    background:var(--purple);color:white;font-size:0.75rem;font-weight:700;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .icon-btn{
+    background:transparent;border:none;color:var(--muted);
+    font-size:1rem;padding:4px 6px;border-radius:6px;
+  }
+  .icon-btn:hover{color:var(--text);background:rgba(255,255,255,0.06);}
+  .empty{color:var(--muted);font-size:0.9rem;text-align:center;padding:20px 0;}
+  .player-box{
+    position:relative;
+    width:100%;
+    aspect-ratio:16/9;
+    background:#000;
+    border-radius:12px;
+    overflow:hidden;
+    margin-bottom:12px;
+  }
+  .player-box iframe{width:100%;height:100%;border:0;}
+  .now-card{
+    display:flex;gap:12px;align-items:center;
+    background:linear-gradient(90deg, rgba(255,45,149,0.15), rgba(139,47,224,0.15));
+    border:1px solid rgba(255,45,149,0.3);
+    border-radius:12px;padding:12px;margin-bottom:14px;
+  }
+  .now-card .who{font-size:1.2rem;font-weight:800;color:var(--gold);}
+  .now-card .song{color:var(--muted);}
+  .settings-toggle{
+    position:fixed;top:18px;right:18px;
+    background:var(--panel2);border:1px solid rgba(255,255,255,0.1);
+    color:var(--muted);border-radius:50%;width:40px;height:40px;font-size:1.1rem;
+  }
+  .settings-panel{
+    position:fixed;top:0;right:0;height:100vh;width:340px;max-width:90vw;
+    background:#0f0a22;border-left:1px solid rgba(255,255,255,0.1);
+    padding:22px;transform:translateX(100%);transition:transform 0.25s ease;
+    z-index:50;overflow-y:auto;
+  }
+  .settings-panel.open{transform:translateX(0);}
+  .settings-panel h3{color:var(--gold);margin-top:0;}
+  .settings-panel .close{float:right;background:transparent;color:var(--muted);border:none;font-size:1.2rem;cursor:pointer;}
+  .overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:40;
+    display:none;
+  }
+  .overlay.open{display:block;}
+  .hint{font-size:0.75rem;color:var(--muted);margin-top:6px;line-height:1.4;}
+  .badge{
+    display:inline-block;font-size:0.7rem;padding:2px 8px;border-radius:20px;
+    background:rgba(45,232,138,0.15);color:var(--good);border:1px solid rgba(45,232,138,0.35);
+  }
+  .badge.warn{background:rgba(255,210,63,0.15);color:var(--gold);border-color:rgba(255,210,63,0.35);}
+  .history{margin-top:16px;}
+  .history-item{font-size:0.8rem;color:var(--muted);padding:6px 0;border-bottom:1px dashed rgba(255,255,255,0.06);}
+  .history-item b{color:var(--text);}
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:#1b1436;border:1px solid var(--pink);color:var(--text);
+    padding:10px 18px;border-radius:10px;font-size:0.85rem;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4);
+    opacity:0;pointer-events:none;transition:opacity 0.2s ease;
+    z-index:60;
+  }
+  .toast.show{opacity:1;}
+
+  /* ---------- Skins ---------- */
+  body[data-skin="christmas"]{
+    --pink:#e0384c; --purple:#146b3a; --cyan:#2f9e6a; --gold:#f4c95d;
+    --bg:#0a140d; --panel:#122a1b; --panel2:#1a3a26;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(20,107,58,0.35), transparent 40%),
+      radial-gradient(circle at 85% 0%, rgba(47,158,106,0.25), transparent 40%),
+      radial-gradient(circle at 50% 100%, rgba(224,56,76,0.22), transparent 45%),
+      var(--bg);
+  }
+  body[data-skin="fall"]{
+    --pink:#d97a34; --purple:#8a4b23; --cyan:#c9932f; --gold:#e8b64a;
+    --bg:#1a120b; --panel:#28190c; --panel2:#33220f;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(138,75,35,0.35), transparent 40%),
+      radial-gradient(circle at 85% 0%, rgba(201,147,47,0.22), transparent 40%),
+      radial-gradient(circle at 50% 100%, rgba(217,122,52,0.25), transparent 45%),
+      var(--bg);
+  }
+  body[data-skin="halloween"]{
+    --pink:#ff7518; --purple:#5d1a8b; --cyan:#39ff8a; --gold:#ffcc00;
+    --bg:#0a0a0f; --panel:#14101f; --panel2:#1d1730;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(93,26,139,0.4), transparent 40%),
+      radial-gradient(circle at 85% 0%, rgba(57,255,138,0.16), transparent 40%),
+      radial-gradient(circle at 50% 100%, rgba(255,117,24,0.25), transparent 45%),
+      var(--bg);
+  }
+  body[data-skin="birthday"]{
+    --pink:#ff5eae; --purple:#7b2ff7; --cyan:#3ad0ff; --gold:#ffd23f;
+    --bg:#12071f; --panel:#1c0e33; --panel2:#271347;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(123,47,247,0.35), transparent 40%),
+      radial-gradient(circle at 85% 0%, rgba(58,208,255,0.25), transparent 40%),
+      radial-gradient(circle at 50% 100%, rgba(255,94,174,0.25), transparent 45%),
+      var(--bg);
+  }
+</style>
+</head>
+<body>
+
+<button class="settings-toggle" id="settingsToggle" title="Settings">⚙</button>
+<div class="overlay" id="overlay"></div>
+<div class="settings-panel" id="settingsPanel">
+  <button class="close" id="closeSettings">✕</button>
+  <h3>Settings</h3>
+
+  <label>Event Title</label>
+  <input type="text" id="titleInput" maxlength="60" placeholder="e.g. Club Edgemore Karaoke">
+  <label style="margin-top:12px;">Subtitle</label>
+  <input type="text" id="subtitleInput" maxlength="120" placeholder="e.g. Add your name & song, then wait for your call to the stage">
+  <div class="row" style="margin-top:8px;">
+    <button class="btn-primary" id="saveTitleBtn">Save</button>
+  </div>
+
+  <label style="margin-top:20px;">Theme / Skin</label>
+  <select id="skinSelect">
+    <option value="classic">Classic Neon</option>
+    <option value="christmas">Christmas</option>
+    <option value="fall">Fall</option>
+    <option value="halloween">Halloween</option>
+    <option value="birthday">Birthday</option>
+  </select>
+
+  <label style="margin-top:20px;">YouTube Data API Key</label>
+  <input type="text" id="apiKeyInput" placeholder="Paste your YouTube Data API v3 key">
+  <div class="hint">
+    Free from Google Cloud Console → enable "YouTube Data API v3" → create an API key.
+    Stored only in this browser (localStorage) — never sent anywhere else.
+  </div>
+  <div class="row" style="margin-top:8px;">
+    <button class="btn-primary" id="saveKeyBtn">Save Key</button>
+    <span id="keyStatus" class="badge warn">No key saved</span>
+  </div>
+
+  <label style="margin-top:20px;">Announcer Voice</label>
+  <select id="voiceSelect"></select>
+  <div class="row" style="margin-top:8px;">
+    <button class="btn-secondary" id="testVoiceBtn">Test Voice</button>
+  </div>
+
+  <label style="margin-top:20px;">Announcement Style</label>
+  <select id="styleSelect">
+    <option value="random">Random / mixed</option>
+    <option value="mainstage">"[Name] to the main stage for [Song]"</option>
+    <option value="giveitup">"Let's give it up for [Name] singing [Song]"</option>
+    <option value="next">"Coming up next: [Name] with [Song]"</option>
+  </select>
+
+  <div class="row" style="margin-top:20px;">
+    <button class="btn-danger" id="resetAllBtn">Reset queue &amp; history</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <header>
+    <h1 id="eventTitle">CLUB EDGEMORE KARAOKE</h1>
+    <p id="eventSubtitle">Add your name &amp; song, then wait for your call to the stage</p>
+  </header>
+
+  <div class="grid">
+    <!-- LEFT: Sign up + search -->
+    <div class="card">
+      <h2>📝 Sign Up</h2>
+      <label>Your Name</label>
+      <input type="text" id="nameInput" placeholder="e.g. Leah" maxlength="40">
+      <label>Song Title (+ artist helps)</label>
+      <input type="text" id="songInput" placeholder="e.g. Jumper Third Eye Blind" maxlength="80">
+      <div class="row" style="margin-top:12px;">
+        <button class="btn-primary" id="searchBtn">Search YouTube</button>
+      </div>
+      <div class="results" id="results"></div>
+    </div>
+
+    <!-- RIGHT: Now playing + queue -->
+    <div class="card">
+      <h2>🎬 Now Playing</h2>
+      <div class="now-card" id="nowCard" style="display:none;">
+        <div class="meta">
+          <div class="who" id="nowWho"></div>
+          <div class="song" id="nowSong"></div>
+        </div>
+      </div>
+      <div class="player-box">
+        <iframe id="playerFrame" src="" title="Karaoke player"
+          allow="autoplay; encrypted-media; picture-in-picture"
+          allowfullscreen frameborder="0"></iframe>
+      </div>
+      <div class="hint" style="margin-top:-8px;margin-bottom:12px;">Use the video's own on-screen controls to pause/rewind/adjust volume.</div>
+      <div class="row" style="margin-bottom:16px;">
+        <button class="btn-good" id="announceNextBtn">📣 Announce &amp; Play Next</button>
+        <button class="btn-ghost" id="skipBtn">⏭ Stop / Skip</button>
+      </div>
+
+      <h2>📋 Up Next <span id="queueCount" class="badge">0</span></h2>
+      <div class="queue-list" id="queueList">
+        <div class="empty">No one in the queue yet — be the first!</div>
+      </div>
+
+      <div class="history" id="historyWrap" style="display:none;">
+        <h2 style="margin-top:20px;">✅ Already Performed</h2>
+        <div id="historyList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- State ----------
+  var STORAGE_KEY = "edgemoreKaraoke.v1";
+  var state = loadState();
+
+  function loadState(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(raw) return JSON.parse(raw);
+    }catch(e){}
+    return { apiKey:"", queue:[], history:[], voiceName:"", style:"random",
+      title:"CLUB EDGEMORE KARAOKE",
+      subtitle:"Add your name & song, then wait for your call to the stage",
+      skin:"classic" };
+  }
+  function saveState(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+  }
+
+  // ---------- Toast ----------
+  var toastEl = document.getElementById("toast");
+  var toastTimer = null;
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 2600);
+  }
+
+  // ---------- Settings panel ----------
+  var settingsPanel = document.getElementById("settingsPanel");
+  var overlay = document.getElementById("overlay");
+  document.getElementById("settingsToggle").addEventListener("click", function(){
+    settingsPanel.classList.add("open");
+    overlay.classList.add("open");
+  });
+  function closeSettings(){
+    settingsPanel.classList.remove("open");
+    overlay.classList.remove("open");
+  }
+  document.getElementById("closeSettings").addEventListener("click", closeSettings);
+  overlay.addEventListener("click", closeSettings);
+
+  var DEFAULT_TITLE = "CLUB EDGEMORE KARAOKE";
+  var DEFAULT_SUBTITLE = "Add your name & song, then wait for your call to the stage";
+  var eventTitleEl = document.getElementById("eventTitle");
+  var eventSubtitleEl = document.getElementById("eventSubtitle");
+  var titleInput = document.getElementById("titleInput");
+  var subtitleInput = document.getElementById("subtitleInput");
+
+  function applyTitleAndSubtitle(){
+    eventTitleEl.textContent = state.title || DEFAULT_TITLE;
+    eventSubtitleEl.textContent = state.subtitle || DEFAULT_SUBTITLE;
+  }
+  titleInput.value = state.title || DEFAULT_TITLE;
+  subtitleInput.value = state.subtitle || DEFAULT_SUBTITLE;
+  applyTitleAndSubtitle();
+  document.getElementById("saveTitleBtn").addEventListener("click", function(){
+    state.title = titleInput.value.trim() || DEFAULT_TITLE;
+    state.subtitle = subtitleInput.value.trim() || DEFAULT_SUBTITLE;
+    saveState();
+    applyTitleAndSubtitle();
+    toast("Event details saved.");
+  });
+
+  var skinSelect = document.getElementById("skinSelect");
+  skinSelect.value = state.skin || "classic";
+  applySkin(state.skin || "classic");
+  function applySkin(skin){
+    if(skin && skin !== "classic"){
+      document.body.setAttribute("data-skin", skin);
+    } else {
+      document.body.removeAttribute("data-skin");
+    }
+  }
+  skinSelect.addEventListener("change", function(){
+    state.skin = skinSelect.value;
+    saveState();
+    applySkin(state.skin);
+  });
+
+  var apiKeyInput = document.getElementById("apiKeyInput");
+  var keyStatus = document.getElementById("keyStatus");
+  apiKeyInput.value = state.apiKey || "";
+  updateKeyStatus();
+  function updateKeyStatus(){
+    if(state.apiKey){
+      keyStatus.textContent = "Key saved";
+      keyStatus.classList.remove("warn");
+    } else {
+      keyStatus.textContent = "No key saved";
+      keyStatus.classList.add("warn");
+    }
+  }
+  document.getElementById("saveKeyBtn").addEventListener("click", function(){
+    state.apiKey = apiKeyInput.value.trim();
+    saveState();
+    updateKeyStatus();
+    toast("API key saved.");
+  });
+
+  var styleSelect = document.getElementById("styleSelect");
+  styleSelect.value = state.style || "random";
+  styleSelect.addEventListener("change", function(){
+    state.style = styleSelect.value;
+    saveState();
+  });
+
+  document.getElementById("resetAllBtn").addEventListener("click", function(){
+    if(!confirm("Clear the entire queue and performance history?")) return;
+    state.queue = [];
+    state.history = [];
+    saveState();
+    renderQueue();
+    renderHistory();
+    toast("Queue and history cleared.");
+  });
+
+  // ---------- Voices (Web Speech API) ----------
+  var voiceSelect = document.getElementById("voiceSelect");
+  var voices = [];
+  function loadVoices(){
+    voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+    voiceSelect.innerHTML = "";
+    if(!voices.length){
+      var opt = document.createElement("option");
+      opt.textContent = "Loading voices...";
+      voiceSelect.appendChild(opt);
+      return;
+    }
+    voices.forEach(function(v, i){
+      var opt = document.createElement("option");
+      opt.value = v.name;
+      opt.textContent = v.name + " (" + v.lang + ")";
+      voiceSelect.appendChild(opt);
+    });
+    if(state.voiceName && voices.some(function(v){return v.name===state.voiceName;})){
+      voiceSelect.value = state.voiceName;
+    }
+  }
+  if(window.speechSynthesis){
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+  }
+  voiceSelect.addEventListener("change", function(){
+    state.voiceName = voiceSelect.value;
+    saveState();
+  });
+  document.getElementById("testVoiceBtn").addEventListener("click", function(){
+    speak("Testing, testing. Leah to the main stage for Jumper!");
+  });
+
+  function speak(text, onend){
+    if(!window.speechSynthesis){
+      if(onend) onend();
+      return;
+    }
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(text);
+    var chosen = voices.find(function(v){ return v.name === state.voiceName; });
+    if(chosen) u.voice = chosen;
+    u.rate = 0.95;
+    u.pitch = 1.05;
+    if(onend) u.onend = onend;
+    else if(!onend) u.onend = function(){};
+    window.speechSynthesis.speak(u);
+  }
+
+  // ---------- YouTube search ----------
+  var resultsEl = document.getElementById("results");
+  var nameInput = document.getElementById("nameInput");
+  var songInput = document.getElementById("songInput");
+
+  document.getElementById("searchBtn").addEventListener("click", doSearch);
+  [nameInput, songInput].forEach(function(el){
+    el.addEventListener("keydown", function(e){
+      if(e.key === "Enter") doSearch();
+    });
+  });
+
+  function doSearch(){
+    var name = nameInput.value.trim();
+    var song = songInput.value.trim();
+    if(!name){ toast("Enter your name first."); nameInput.focus(); return; }
+    if(!song){ toast("Enter a song to search."); songInput.focus(); return; }
+    if(!state.apiKey){
+      toast("Add a YouTube API key in Settings (⚙) first.");
+      settingsPanel.classList.add("open");
+      overlay.classList.add("open");
+      return;
+    }
+    resultsEl.innerHTML = '<div class="empty">Searching…</div>';
+    var q = encodeURIComponent(song + " karaoke");
+    // videoEmbeddable=true filters out results the owner has blocked from playing on other sites
+    var url = "https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=6&q=" + q + "&key=" + encodeURIComponent(state.apiKey);
+    fetch(url).then(function(r){
+      if(!r.ok) return r.json().then(function(j){ throw new Error(j.error && j.error.message ? j.error.message : ("HTTP " + r.status)); });
+      return r.json();
+    }).then(function(data){
+      renderResults(data.items || [], name, song);
+    }).catch(function(err){
+      resultsEl.innerHTML = '<div class="empty">Search failed: ' + escapeHtml(err.message) + '</div>';
+    });
+  }
+
+  function renderResults(items, name, song){
+    if(!items.length){
+      resultsEl.innerHTML = '<div class="empty">No results found. Try a different search.</div>';
+      return;
+    }
+    resultsEl.innerHTML = "";
+    items.forEach(function(item){
+      var vid = item.id.videoId;
+      var snip = item.snippet;
+      var div = document.createElement("div");
+      div.className = "result-item";
+      div.innerHTML =
+        '<img src="' + (snip.thumbnails.default ? snip.thumbnails.default.url : "") + '" alt="">' +
+        '<div><div class="rtitle">' + escapeHtml(snip.title) + '</div>' +
+        '<div class="rchannel">' + escapeHtml(snip.channelTitle) + '</div></div>';
+      div.addEventListener("click", function(){
+        addToQueue(name, song, vid, snip.title, snip.thumbnails.default ? snip.thumbnails.default.url : "");
+      });
+      resultsEl.appendChild(div);
+    });
+  }
+
+  function addToQueue(name, songQuery, videoId, videoTitle, thumb){
+    state.queue.push({
+      id: "q_" + Date.now() + "_" + Math.random().toString(36).slice(2,7),
+      name: name,
+      song: songQuery,
+      videoId: videoId,
+      videoTitle: videoTitle,
+      thumb: thumb
+    });
+    saveState();
+    renderQueue();
+    resultsEl.innerHTML = "";
+    nameInput.value = "";
+    songInput.value = "";
+    toast(name + " added to the queue for \"" + songQuery + "\"!");
+  }
+
+  // ---------- Queue rendering ----------
+  var queueListEl = document.getElementById("queueList");
+  var queueCountEl = document.getElementById("queueCount");
+
+  function renderQueue(){
+    queueCountEl.textContent = state.queue.length;
+    if(!state.queue.length){
+      queueListEl.innerHTML = '<div class="empty">No one in the queue yet — be the first!</div>';
+      return;
+    }
+    queueListEl.innerHTML = "";
+    state.queue.forEach(function(item, idx){
+      var div = document.createElement("div");
+      div.className = "queue-item" + (idx === 0 ? " next" : "");
+      div.innerHTML =
+        '<div class="pos">' + (idx+1) + '</div>' +
+        '<img src="' + item.thumb + '" alt="">' +
+        '<div class="meta">' +
+          '<div class="who">' + escapeHtml(item.name) + '</div>' +
+          '<div class="song">' + escapeHtml(item.song) + '</div>' +
+        '</div>' +
+        '<button class="icon-btn" data-act="up" title="Move up">↑</button>' +
+        '<button class="icon-btn" data-act="down" title="Move down">↓</button>' +
+        '<button class="icon-btn" data-act="remove" title="Remove">✕</button>';
+      div.querySelector('[data-act="up"]').addEventListener("click", function(){ moveItem(idx, -1); });
+      div.querySelector('[data-act="down"]').addEventListener("click", function(){ moveItem(idx, 1); });
+      div.querySelector('[data-act="remove"]').addEventListener("click", function(){ removeItem(idx); });
+      queueListEl.appendChild(div);
+    });
+  }
+
+  function moveItem(idx, dir){
+    var newIdx = idx + dir;
+    if(newIdx < 0 || newIdx >= state.queue.length) return;
+    var tmp = state.queue[idx];
+    state.queue[idx] = state.queue[newIdx];
+    state.queue[newIdx] = tmp;
+    saveState();
+    renderQueue();
+  }
+  function removeItem(idx){
+    state.queue.splice(idx, 1);
+    saveState();
+    renderQueue();
+  }
+
+  // ---------- History ----------
+  var historyWrap = document.getElementById("historyWrap");
+  var historyListEl = document.getElementById("historyList");
+  function renderHistory(){
+    if(!state.history.length){
+      historyWrap.style.display = "none";
+      return;
+    }
+    historyWrap.style.display = "block";
+    historyListEl.innerHTML = "";
+    state.history.slice().reverse().forEach(function(h){
+      var div = document.createElement("div");
+      div.className = "history-item";
+      div.innerHTML = '<b>' + escapeHtml(h.name) + '</b> — ' + escapeHtml(h.song);
+      historyListEl.appendChild(div);
+    });
+  }
+
+  // ---------- Announcer phrasing ----------
+  var TEMPLATES = {
+    mainstage: function(name, song){ return name + ", to the main stage for " + song + "!"; },
+    giveitup: function(name, song){ return "Let's give it up for " + name + ", singing " + song + "!"; },
+    next: function(name, song){ return "Coming up next: " + name + ", with " + song + "!"; }
+  };
+  var ALL_STYLES = ["mainstage", "giveitup", "next"];
+  function buildAnnouncement(name, song){
+    var style = state.style;
+    if(style === "random" || !TEMPLATES[style]){
+      style = ALL_STYLES[Math.floor(Math.random() * ALL_STYLES.length)];
+    }
+    return TEMPLATES[style](name, song);
+  }
+
+  // ---------- YouTube player (plain iframe embed — no JS API / postMessage handshake) ----------
+  var playerFrame = document.getElementById("playerFrame");
+
+  function playVideo(videoId){
+    // Reset src first so re-playing the same video restarts it reliably
+    playerFrame.src = "";
+    playerFrame.src = "https://www.youtube.com/embed/" + encodeURIComponent(videoId) +
+      "?autoplay=1&rel=0&playsinline=1&modestbranding=1";
+  }
+
+  function stopVideo(){
+    playerFrame.src = "";
+  }
+
+  // ---------- Now playing UI ----------
+  var nowCard = document.getElementById("nowCard");
+  var nowWho = document.getElementById("nowWho");
+  var nowSong = document.getElementById("nowSong");
+
+  function setNowPlaying(item){
+    if(!item){
+      nowCard.style.display = "none";
+      return;
+    }
+    nowCard.style.display = "flex";
+    nowWho.textContent = "🎤 " + item.name;
+    nowSong.textContent = item.song;
+  }
+
+  // ---------- Announce & Play Next ----------
+  document.getElementById("announceNextBtn").addEventListener("click", function(){
+    if(!state.queue.length){
+      toast("The queue is empty!");
+      return;
+    }
+    var item = state.queue.shift();
+    saveState();
+    renderQueue();
+    var line = buildAnnouncement(item.name, item.song);
+    toast(line);
+    speak(line, function(){
+      playVideo(item.videoId);
+      setNowPlaying(item);
+      state.history.push({ name:item.name, song:item.song });
+      saveState();
+      renderHistory();
+    });
+  });
+
+  document.getElementById("skipBtn").addEventListener("click", function(){
+    stopVideo();
+    setNowPlaying(null);
+    toast("Stopped. Click \"Announce & Play Next\" for the next performer.");
+  });
+
+  // ---------- Utils ----------
+  function escapeHtml(str){
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  // ---------- Init ----------
+  renderQueue();
+  renderHistory();
+})();
+</script>
+</body>
+</html>
+
