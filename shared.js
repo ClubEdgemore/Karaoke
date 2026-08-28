@@ -109,6 +109,7 @@
   };
   var ALL_STYLES = ["mainstage","giveitup","next"];
   function buildAnnouncement(name, song, style){
+    if(style === "none") return null;
     if(style === "random" || !TEMPLATES[style]) style = ALL_STYLES[Math.floor(Math.random()*ALL_STYLES.length)];
     return TEMPLATES[style](name, song);
   }

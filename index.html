@@ -294,6 +294,7 @@
     <option value="mainstage">"[Name] to the main stage for [Song]"</option>
     <option value="giveitup">"Let's give it up for [Name] singing [Song]"</option>
     <option value="next">"Coming up next: [Name] with [Song]"</option>
+    <option value="none">No announcer — just play the video</option>
   </select>
 
   <div class="row" style="margin-top:22px;">
@@ -664,13 +665,19 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     var line = E.buildAnnouncement(item.name, item.song, local.style);
     var when = Date.now();
     E.removeFromQueue(item._id);
-    toast(line);
-    speak(line, function(){
+    function goLive(){
       playVideo(item.videoId);
       setNowPlayingCard(item);
-      E.setNow({ name:item.name, song:item.song, videoId:item.videoId, announcement:line, at:when, cleared:false });
+      E.setNow({ name:item.name, song:item.song, videoId:item.videoId, announcement: line || "", at:when, cleared:false });
       E.addHistory(item.name, item.song, when);
-    });
+    }
+    if(line){
+      toast(line);
+      speak(line, goLive);
+    } else {
+      toast(item.name + " is up — " + item.song);
+      goLive();
+    }
   });
 
   document.getElementById("skipBtn").addEventListener("click", function(){
