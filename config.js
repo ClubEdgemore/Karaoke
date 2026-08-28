@@ -21,4 +21,4 @@ var FIREBASE_CONFIG = {
 //    Google Cloud Console (console.cloud.google.com) → APIs & Services → Credentials → Create API key.
 //    Then enable "YouTube Data API v3" for the project, and (recommended) restrict this key
 //    to HTTP referrer "clubedgemore.github.io/*" so it can't be used from other sites.
-var YOUTUBE_API_KEY = "PASTE_YOUTUBE_API_KEY_HERE";
+var YOUTUBE_API_KEY = "AIzaSyB8xRtmVYnsCr7ETclm-RX3qiqMHmLO7jg";
