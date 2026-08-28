@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join — Club Edgemore Karaoke</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%8E%A4</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Monoton&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+  :root{
+    --bg:#0d0a1a; --bg2:#160f2b; --panel:#1b1436; --panel2:#241a47;
+    --pink:#ff2d95; --purple:#8b2fe0; --cyan:#2de3ff; --gold:#ffd23f;
+    --text:#f4f0ff; --muted:#a99ecb; --danger:#ff4d5e; --good:#2de88a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(139,47,224,0.35), transparent 40%),
+      radial-gradient(circle at 85% 0%, rgba(45,227,255,0.25), transparent 40%),
+      radial-gradient(circle at 50% 100%, rgba(255,45,149,0.25), transparent 45%),
+      var(--bg);
+    color:var(--text); font-family:'Manrope', system-ui, -apple-system, sans-serif;
+    padding:24px 16px 60px;
+  }
+  .wrap{max-width:520px;margin:0 auto;}
+  header{text-align:center;margin-bottom:20px;}
+  header h1{
+    font-family:'Monoton', cursive, system-ui; font-weight:400; font-size:1.9rem;
+    margin:0; letter-spacing:2px;
+    background:linear-gradient(90deg,var(--pink),var(--gold),var(--cyan));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 0 30px rgba(255,45,149,0.25);
+  }
+  header p{color:var(--muted);margin:6px 0 0;font-size:0.9rem;}
+  .card{
+    background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid rgba(255,255,255,0.06); border-radius:16px;
+    padding:20px; box-shadow:0 10px 30px rgba(0,0,0,0.35); margin-bottom:16px;
+  }
+  .card h2{margin:0 0 14px;font-size:1rem;color:var(--gold);display:flex;align-items:center;gap:8px;}
+  label{display:block;font-size:0.8rem;color:var(--muted);margin:10px 0 4px;}
+  input[type=text]{
+    width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);
+    background:#0f0a22;color:var(--text);font-size:0.95rem;
+  }
+  input[type=text]:focus{outline:2px solid var(--pink);}
+  button{
+    cursor:pointer;border:none;border-radius:10px;font-weight:600;font-size:0.9rem;
+    padding:10px 16px;transition:transform .1s ease;
+  }
+  button:active{transform:scale(0.97);}
+  .btn-primary{background:linear-gradient(90deg,var(--pink),var(--purple));color:#fff;}
+  .row{display:flex;gap:8px;flex-wrap:wrap;}
+  .results{margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto;}
+  .result-item{
+    display:flex;gap:10px;align-items:center;background:#120c26;
+    border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:8px;cursor:pointer;
+  }
+  .result-item:hover{border-color:var(--pink);}
+  .result-item img{width:80px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0;}
+  .result-item .rtitle{font-size:0.83rem;line-height:1.3;}
+  .result-item .rchannel{font-size:0.72rem;color:var(--muted);}
+  .empty{color:var(--muted);font-size:0.85rem;text-align:center;padding:14px 0;}
+  .now-banner{
+    background:linear-gradient(90deg, rgba(255,45,149,0.16), rgba(139,47,224,0.16));
+    border:1px solid rgba(255,45,149,0.3);border-radius:12px;padding:12px 14px;
+  }
+  .now-banner .who{font-weight:800;color:var(--gold);font-size:1.02rem;}
+  .now-banner .song{color:var(--muted);font-size:0.86rem;}
+  .now-banner.empty{color:var(--muted);font-size:0.85rem;background:transparent;border-style:dashed;text-align:left;padding:12px 14px;}
+  .queue-list{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto;}
+  .queue-item{display:flex;gap:10px;align-items:center;background:#120c26;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:8px 10px;}
+  .queue-item.next{border-color:var(--gold);}
+  .queue-item .pos{
+    width:22px;height:22px;border-radius:50%;background:var(--purple);color:#fff;
+    font-size:0.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .queue-item .who{font-weight:700;color:var(--cyan);font-size:0.86rem;}
+  .queue-item .song{font-size:0.78rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .badge{display:inline-block;font-size:0.68rem;padding:2px 8px;border-radius:20px;background:rgba(45,232,138,0.15);color:var(--good);border:1px solid rgba(45,232,138,0.35);}
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:#1b1436;border:1px solid var(--pink);color:var(--text);
+    padding:10px 18px;border-radius:10px;font-size:0.84rem;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4);opacity:0;pointer-events:none;
+    transition:opacity .2s ease;z-index:60;max-width:90vw;text-align:center;
+  }
+  .toast.show{opacity:1;}
+
+  /* Skins mirrored from the main page so the join page matches whatever's set there */
+  body[data-skin="christmas"]{--pink:#e0384c;--purple:#146b3a;--cyan:#2f9e6a;--gold:#f4c95d;--bg:#0a140d;--panel:#122a1b;--panel2:#1a3a26;}
+  body[data-skin="fall"]{--pink:#d97a34;--purple:#8a4b23;--cyan:#c9932f;--gold:#e8b64a;--bg:#1a120b;--panel:#28190c;--panel2:#33220f;}
+  body[data-skin="halloween"]{--pink:#ff7518;--purple:#5d1a8b;--cyan:#39ff8a;--gold:#ffcc00;--bg:#0a0a0f;--panel:#14101f;--panel2:#1d1730;}
+  body[data-skin="birthday"]{--pink:#ff5eae;--purple:#7b2ff7;--cyan:#3ad0ff;--gold:#ffd23f;--bg:#12071f;--panel:#1c0e33;--panel2:#271347;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1 id="eventTitle">CLUB EDGEMORE KARAOKE</h1>
+    <p id="eventSubtitle">Add your name &amp; song — you'll see your spot in line below</p>
+  </header>
+
+  <div class="card">
+    <h2>🎤 Add Your Song</h2>
+    <label>Your Name</label>
+    <input type="text" id="nameInput" placeholder="e.g. Andrea" maxlength="40">
+    <label>Song Title (+ artist helps)</label>
+    <input type="text" id="songInput" placeholder="e.g. What Was I Made For" maxlength="80">
+    <div class="row" style="margin-top:12px;">
+      <button class="btn-primary" id="searchBtn">Search YouTube</button>
+    </div>
+    <div class="results" id="results"></div>
+  </div>
+
+  <div class="card">
+    <h2>🎬 Now Playing</h2>
+    <div class="now-banner empty" id="nowBanner">Nobody up yet.</div>
+  </div>
+
+  <div class="card">
+    <h2>📋 Up Next <span id="queueCount" class="badge">0</span></h2>
+    <div class="queue-list" id="queueList"><div class="empty">Queue is empty.</div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="config.js"></script>
+<script src="shared.js"></script>
+<script>
+(function(){
+  "use strict";
+  var E = window.Edgemore;
+
+  var toastEl = document.getElementById("toast");
+  var toastTimer = null;
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 3000);
+  }
+
+  // ---------- Settings (title/subtitle/skin) ----------
+  E.subscribeSettings(function(s){
+    document.getElementById("eventTitle").textContent = s.title || "CLUB EDGEMORE KARAOKE";
+    document.getElementById("eventSubtitle").textContent = s.subtitle || "Add your name & song — you'll see your spot in line below";
+    E.applySkin(s.skin || "classic");
+  });
+
+  // ---------- Search & submit ----------
+  var resultsEl = document.getElementById("results");
+  var nameInput = document.getElementById("nameInput");
+  var songInput = document.getElementById("songInput");
+  var currentQueue = [];
+
+  document.getElementById("searchBtn").addEventListener("click", doSearch);
+  [nameInput, songInput].forEach(function(el){
+    el.addEventListener("keydown", function(e){ if(e.key === "Enter") doSearch(); });
+  });
+
+  function doSearch(){
+    var name = nameInput.value.trim();
+    var song = songInput.value.trim();
+    if(!name){ toast("Enter your name first."); nameInput.focus(); return; }
+    if(!song){ toast("Enter a song to search."); songInput.focus(); return; }
+    resultsEl.innerHTML = '<div class="empty">Searching…</div>';
+    E.searchYouTube(song, function(items){
+      renderResults(items, name, song);
+    }, function(err){
+      resultsEl.innerHTML = '<div class="empty">Search failed: ' + E.escapeHtml(err) + '</div>';
+    });
+  }
+
+  function renderResults(items, name, song){
+    if(!items.length){
+      resultsEl.innerHTML = '<div class="empty">No results found. Try a different search.</div>';
+      return;
+    }
+    resultsEl.innerHTML = "";
+    items.forEach(function(item){
+      var vid = item.id.videoId;
+      var snip = item.snippet;
+      var thumb = snip.thumbnails && snip.thumbnails.default ? snip.thumbnails.default.url : "";
+      var div = document.createElement("div");
+      div.className = "result-item";
+      div.innerHTML =
+        '<img src="' + thumb + '" alt="">' +
+        '<div><div class="rtitle">' + E.escapeHtml(snip.title) + '</div>' +
+        '<div class="rchannel">' + E.escapeHtml(snip.channelTitle) + '</div></div>';
+      div.addEventListener("click", function(){
+        var maxOrder = currentQueue.reduce(function(m,it){ return Math.max(m, it.order||0); }, 0);
+        E.addToQueue(name, song, vid, thumb, maxOrder + 1).then(function(){
+          toast(name + ", you're in the queue for \"" + song + "\"!");
+          resultsEl.innerHTML = "";
+          nameInput.value = ""; songInput.value = "";
+        }).catch(function(err){
+          toast("Couldn't add that — try again. (" + err.message + ")");
+        });
+      });
+      resultsEl.appendChild(div);
+    });
+  }
+
+  // ---------- Live status (read-only) ----------
+  var nowBanner = document.getElementById("nowBanner");
+  E.subscribeNow(function(now){
+    if(!now){
+      nowBanner.className = "now-banner empty";
+      nowBanner.textContent = "Nobody up yet.";
+      return;
+    }
+    nowBanner.className = "now-banner";
+    nowBanner.innerHTML = '<div class="who">🎤 ' + E.escapeHtml(now.name) + '</div><div class="song">' + E.escapeHtml(now.song) + '</div>';
+  });
+
+  var queueListEl = document.getElementById("queueList");
+  var queueCountEl = document.getElementById("queueCount");
+  E.subscribeQueue(function(arr){
+    currentQueue = arr;
+    queueCountEl.textContent = arr.length;
+    if(!arr.length){
+      queueListEl.innerHTML = '<div class="empty">Queue is empty.</div>';
+      return;
+    }
+    queueListEl.innerHTML = "";
+    arr.forEach(function(item, idx){
+      var div = document.createElement("div");
+      div.className = "queue-item" + (idx === 0 ? " next" : "");
+      div.innerHTML =
+        '<div class="pos">' + (idx+1) + '</div>' +
+        '<div><div class="who">' + E.escapeHtml(item.name) + '</div>' +
+        '<div class="song">' + E.escapeHtml(item.song) + '</div></div>';
+      queueListEl.appendChild(div);
+    });
+  });
+})();
+</script>
+</body>
+</html>
