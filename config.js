@@ -8,13 +8,13 @@
 //    This "apiKey" is Firebase's public web key — it's meant to be visible in client code,
 //    unlike the YouTube key below. Access is controlled by your Database Rules instead.
 var FIREBASE_CONFIG = {
-  apiKey: "PASTE_FIREBASE_API_KEY_HERE",
-  authDomain: "PASTE_PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://PASTE_PROJECT_ID-default-rtdb.firebaseio.com",
-  projectId: "PASTE_PROJECT_ID",
-  storageBucket: "PASTE_PROJECT_ID.appspot.com",
-  messagingSenderId: "PASTE_SENDER_ID",
-  appId: "PASTE_APP_ID"
+  apiKey: "AIzaSyB-5ZJ0Dh74pjAV9fDMGiSo4TRzC9cX9Ek",
+  authDomain: "club-edgemore-karaoke.firebaseapp.com",
+  databaseURL: "https://club-edgemore-karaoke-default-rtdb.firebaseio.com",
+  projectId: "club-edgemore-karaoke",
+  storageBucket: "club-edgemore-karaoke.firebasestorage.app",
+  messagingSenderId: "303305640591",
+  appId: "1:303305640591:web:9545d1df7630ffcca3fefa"
 };
 
 // 2) YouTube Data API v3 key.
