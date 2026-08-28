@@ -104,6 +104,17 @@
     <p id="eventSubtitle">Add your name &amp; song — you'll see your spot in line below</p>
   </header>
 
+  <div class="card" id="codeCard" style="display:none;">
+    <h2>🔑 Enter Event Code</h2>
+    <p style="color:var(--muted);font-size:0.85rem;margin:0 0 10px;">This link didn't include an event code — ask your host for it (it's shown on their screen).</p>
+    <label>Event Code</label>
+    <input type="text" id="codeInput" placeholder="e.g. edgemore-4821">
+    <div class="row" style="margin-top:12px;">
+      <button class="btn-primary" id="codeSubmitBtn">Join</button>
+    </div>
+  </div>
+
+  <div id="mainCards" style="display:none;">
   <div class="card">
     <h2>🎤 Add Your Song</h2>
     <label>Your Name</label>
@@ -124,6 +135,7 @@
   <div class="card">
     <h2>📋 Up Next <span id="queueCount" class="badge">0</span></h2>
     <div class="queue-list" id="queueList"><div class="empty">Queue is empty.</div></div>
+  </div>
   </div>
 </div>
 
@@ -146,6 +158,38 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 3000);
   }
+
+  // ---------- Session code (?s= in the link the host gave you) ----------
+  var params = new URLSearchParams(window.location.search);
+  var codeFromUrl = params.get("s");
+  var codeCard = document.getElementById("codeCard");
+  var mainCards = document.getElementById("mainCards");
+
+  if(codeFromUrl){
+    enterSession(codeFromUrl);
+  } else {
+    codeCard.style.display = "block";
+    document.getElementById("codeSubmitBtn").addEventListener("click", submitCode);
+    document.getElementById("codeInput").addEventListener("keydown", function(e){ if(e.key === "Enter") submitCode(); });
+  }
+  function submitCode(){
+    var code = document.getElementById("codeInput").value.trim().toLowerCase();
+    if(!code){ document.getElementById("codeInput").focus(); return; }
+    try{
+      var url = new URL(window.location.href);
+      url.searchParams.set("s", code);
+      window.history.replaceState(null, "", url.toString());
+    }catch(e){}
+    enterSession(code);
+  }
+  function enterSession(code){
+    E.setSession(code);
+    codeCard.style.display = "none";
+    mainCards.style.display = "block";
+    startJoin();
+  }
+
+  function startJoin(){
 
   // ---------- Settings (title/subtitle/skin) ----------
   E.subscribeSettings(function(s){
@@ -240,6 +284,7 @@
       queueListEl.appendChild(div);
     });
   });
+  } // end startJoin
 })();
 </script>
 </body>

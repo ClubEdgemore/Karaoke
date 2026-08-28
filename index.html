@@ -196,6 +196,26 @@
     display:none;
   }
   .overlay.open{display:block;}
+
+  .session-gate{
+    position:fixed;inset:0;z-index:100;
+    background:rgba(6,4,16,0.92);
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  .session-gate .gate-card{
+    max-width:420px;width:100%;
+    background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid rgba(255,255,255,0.1);border-radius:18px;
+    padding:28px 26px;box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  }
+  .session-gate h2{
+    margin:0 0 6px;color:var(--gold);font-size:1.2rem;
+  }
+  .session-gate p{color:var(--muted);font-size:0.85rem;margin:0 0 16px;line-height:1.5;}
+  .session-badge{
+    display:inline-block;margin-top:8px;font-size:0.72rem;color:var(--muted);
+  }
+  .session-badge b{color:var(--cyan);font-variant-numeric:tabular-nums;}
   .hint{font-size:0.75rem;color:var(--muted);margin-top:6px;line-height:1.4;}
   .badge{
     display:inline-block;font-size:0.7rem;padding:2px 8px;border-radius:20px;
@@ -300,6 +320,9 @@
   <div class="row" style="margin-top:22px;">
     <button class="btn-danger" id="resetAllBtn">Clear queue &amp; history</button>
   </div>
+  <div class="row" style="margin-top:10px;">
+    <button class="btn-ghost" id="switchEventBtn">Start a different event</button>
+  </div>
   <div class="hint" id="keyHint"></div>
 </div>
 
@@ -318,6 +341,7 @@
         <input type="text" id="linkField" readonly>
         <button class="btn-ghost" id="copyLinkBtn">Copy link</button>
       </div>
+      <div class="session-badge">Event code: <b id="sessionCodeLabel">—</b></div>
     </div>
   </div>
 
@@ -369,6 +393,18 @@
   </div>
 </div>
 
+<div class="session-gate" id="sessionGate" style="display:none;">
+  <div class="gate-card">
+    <h2>🎤 Name Your Event</h2>
+    <p>This gives your karaoke night its own private queue &amp; guest link, separate from anyone else running this app. Pick anything — you can reuse it later from this device automatically.</p>
+    <label>Event Name</label>
+    <input type="text" id="gateNameInput" placeholder="e.g. Edgemore, Smith Family Reunion" maxlength="40">
+    <div class="row" style="margin-top:14px;">
+      <button class="btn-primary" id="gateStartBtn">Start Event</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -383,6 +419,55 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 (function(){
   "use strict";
   var E = window.Edgemore;
+
+  // ---------- Session resolution (?s=code in URL, else remembered locally, else ask) ----------
+  var SESSION_KEY = "edgemoreKaraoke.sessionCode";
+  var sessionGate = document.getElementById("sessionGate");
+  var params = new URLSearchParams(window.location.search);
+  var codeFromUrl = params.get("s");
+  var codeFromStorage = null;
+  try{ codeFromStorage = localStorage.getItem(SESSION_KEY); }catch(e){}
+
+  var resolvedCode = codeFromUrl || codeFromStorage;
+  if(resolvedCode){
+    launchWithSession(resolvedCode);
+  } else {
+    sessionGate.style.display = "flex";
+    document.getElementById("gateStartBtn").addEventListener("click", submitGate);
+    document.getElementById("gateNameInput").addEventListener("keydown", function(e){
+      if(e.key === "Enter") submitGate();
+    });
+    document.getElementById("gateNameInput").focus();
+  }
+  function submitGate(){
+    var name = document.getElementById("gateNameInput").value.trim();
+    if(!name){ document.getElementById("gateNameInput").focus(); return; }
+    var code = E.makeSessionCode(name);
+    launchWithSession(code);
+  }
+  function launchWithSession(code){
+    E.setSession(code);
+    try{ localStorage.setItem(SESSION_KEY, code); }catch(e){}
+    try{
+      var url = new URL(window.location.href);
+      url.searchParams.set("s", code);
+      window.history.replaceState(null, "", url.toString());
+    }catch(e){}
+    sessionGate.style.display = "none";
+    startApp(code);
+  }
+
+  function startApp(sessionCode){
+  var sessionLabel = document.getElementById("sessionCodeLabel");
+  if(sessionLabel) sessionLabel.textContent = sessionCode;
+
+  document.getElementById("switchEventBtn").addEventListener("click", function(){
+    if(!confirm("Start a brand-new event? You'll get a fresh empty queue, and your current event's link will stop being remembered on this device (it still exists if you have its link saved).")) return;
+    try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
+    var url = new URL(window.location.href);
+    url.searchParams.delete("s");
+    window.location.href = url.toString();
+  });
 
   // ---------- Local (per-device) preferences: voice + style only ----------
   var LOCAL_KEY = "edgemoreKaraoke.local.v2";
@@ -491,8 +576,8 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     window.speechSynthesis.speak(u);
   }
 
-  // ---------- QR + share link (points at join.html next to this file) ----------
-  var joinUrl = new URL("join.html", window.location.href).href;
+  // ---------- QR + share link (points at join.html next to this file, with this event's code) ----------
+  var joinUrl = new URL("join.html?s=" + encodeURIComponent(sessionCode), window.location.href).href;
   document.getElementById("linkField").value = joinUrl;
   try{
     new QRCode(document.getElementById("qrBox"), { text: joinUrl, width: 84, height: 84, colorDark:"#0d0a1a", colorLight:"#ffffff" });
@@ -686,6 +771,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     E.clearNow();
     toast("Stopped. Click \"Announce & Play Next\" for the next performer.");
   });
+  } // end startApp
 })();
 </script>
 </body>

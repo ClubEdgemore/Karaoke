@@ -5,6 +5,32 @@
   var app = firebase.initializeApp(FIREBASE_CONFIG);
   var db = firebase.database();
 
+  // ---------- Session (one event = one namespaced branch in the database) ----------
+  var sessionCode = null;
+  var sessionRoot = null; // "sessions/<code>"
+
+  function setSession(code){
+    sessionCode = code;
+    sessionRoot = "sessions/" + code;
+  }
+  function getSession(){ return sessionCode; }
+  function ref(path){
+    if(!sessionRoot) throw new Error("Edgemore.setSession(code) must be called before using the database.");
+    return db.ref(sessionRoot + "/" + path);
+  }
+
+  function slugify(str){
+    var s = String(str || "").toLowerCase().trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 24);
+    return s || "event";
+  }
+  function makeSessionCode(name){
+    var suffix = Math.floor(1000 + Math.random() * 9000); // 4-digit, avoids leading zero
+    return slugify(name) + "-" + suffix;
+  }
+
   function escapeHtml(str){
     return String(str)
       .replace(/&/g, "&amp;")
@@ -23,59 +49,59 @@
     });
   }
 
-  // ---------- Settings (title / subtitle / skin) — shared across every page ----------
+  // ---------- Settings (title / subtitle / skin) — shared within a session ----------
   function subscribeSettings(cb){
-    db.ref("settings").on("value", function(snap){ cb(snap.val() || {}); });
+    ref("settings").on("value", function(snap){ cb(snap.val() || {}); });
   }
   function saveSettings(partial){
-    return db.ref("settings").update(partial);
+    return ref("settings").update(partial);
   }
 
   // ---------- Queue ----------
   function subscribeQueue(cb){
-    db.ref("queue").on("value", function(snap){
+    ref("queue").on("value", function(snap){
       var arr = toArray(snap.val());
       arr.sort(function(a,b){ return (a.order||0) - (b.order||0); });
       cb(arr);
     });
   }
   function addToQueue(name, song, videoId, thumb, order){
-    return db.ref("queue").push({
+    return ref("queue").push({
       name: name, song: song, videoId: videoId, thumb: thumb || "",
       order: order, createdAt: firebase.database.ServerValue.TIMESTAMP
     });
   }
-  function removeFromQueue(id){ return db.ref("queue/" + id).remove(); }
+  function removeFromQueue(id){ return ref("queue/" + id).remove(); }
   function reorderQueue(idA, orderA, idB, orderB){
     var updates = {};
-    updates["queue/" + idA + "/order"] = orderB;
-    updates["queue/" + idB + "/order"] = orderA;
+    updates[sessionRoot + "/queue/" + idA + "/order"] = orderB;
+    updates[sessionRoot + "/queue/" + idB + "/order"] = orderA;
     return db.ref().update(updates);
   }
-  function clearQueue(){ return db.ref("queue").remove(); }
+  function clearQueue(){ return ref("queue").remove(); }
 
   // ---------- Now playing ----------
   function subscribeNow(cb){
-    db.ref("now").on("value", function(snap){
+    ref("now").on("value", function(snap){
       var v = snap.val();
       cb(v && !v.cleared ? v : null);
     });
   }
-  function setNow(obj){ return db.ref("now").set(obj); }
-  function clearNow(){ return db.ref("now").set({ cleared: true, at: Date.now() }); }
+  function setNow(obj){ return ref("now").set(obj); }
+  function clearNow(){ return ref("now").set({ cleared: true, at: Date.now() }); }
 
   // ---------- History ----------
   function subscribeHistory(cb){
-    db.ref("history").on("value", function(snap){
+    ref("history").on("value", function(snap){
       var arr = toArray(snap.val());
       arr.sort(function(a,b){ return (b.performedAt||0) - (a.performedAt||0); });
       cb(arr);
     });
   }
   function addHistory(name, song, performedAt){
-    return db.ref("history").push({ name: name, song: song, performedAt: performedAt });
+    return ref("history").push({ name: name, song: song, performedAt: performedAt });
   }
-  function clearHistory(){ return db.ref("history").remove(); }
+  function clearHistory(){ return ref("history").remove(); }
 
   function formatDateTime(ms){
     if(!ms) return "";
@@ -121,6 +147,8 @@
 
   global.Edgemore = {
     db: db,
+    setSession: setSession, getSession: getSession,
+    slugify: slugify, makeSessionCode: makeSessionCode,
     escapeHtml: escapeHtml,
     subscribeSettings: subscribeSettings, saveSettings: saveSettings,
     subscribeQueue: subscribeQueue, addToQueue: addToQueue, removeFromQueue: removeFromQueue,
