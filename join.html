@@ -88,6 +88,12 @@
     transition:opacity .2s ease;z-index:60;max-width:90vw;text-align:center;
   }
   .toast.show{opacity:1;}
+  .notify-row{display:flex;justify-content:center;margin-bottom:14px;}
+  .notify-row label{
+    display:flex;align-items:center;gap:8px;margin:0;
+    font-size:0.8rem;color:var(--muted);cursor:pointer;user-select:none;
+  }
+  .notify-row input{width:16px;height:16px;accent-color:var(--pink);cursor:pointer;}
 
   /* Skins mirrored from the main page so the join page matches whatever's set there */
   body[data-skin="christmas"]{--pink:#e0384c;--purple:#146b3a;--cyan:#2f9e6a;--gold:#f4c95d;--bg:#0a140d;--panel:#122a1b;--panel2:#1a3a26;}
@@ -115,6 +121,9 @@
   </div>
 
   <div id="mainCards" style="display:none;">
+  <div class="notify-row">
+    <label><input type="checkbox" id="notifyToggle" checked> 🔔 Notify me when I'm up (vibrate/ding)</label>
+  </div>
   <div class="card">
     <h2>🎤 Add Your Song</h2>
     <label>Your Name</label>
@@ -231,8 +240,23 @@
       });
     }catch(e){}
   }
+  // Per-device on/off switch for the vibrate/ding (toast still shows either way).
+  var NOTIFY_PREF_KEY = "edgemore_notify_pref";
+  var notifyEnabled = true;
+  try{
+    var savedPref = localStorage.getItem(NOTIFY_PREF_KEY);
+    notifyEnabled = savedPref === null ? true : savedPref === "1";
+  }catch(e){}
+  var notifyToggle = document.getElementById("notifyToggle");
+  notifyToggle.checked = notifyEnabled;
+  notifyToggle.addEventListener("change", function(){
+    notifyEnabled = notifyToggle.checked;
+    try{ localStorage.setItem(NOTIFY_PREF_KEY, notifyEnabled ? "1" : "0"); }catch(e){}
+  });
+
   function notifyUser(msg, pattern){
     toast(msg);
+    if(!notifyEnabled) return;
     try{ if(navigator.vibrate) navigator.vibrate(pattern); }catch(e){}
     playDing();
   }
