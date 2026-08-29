@@ -119,8 +119,8 @@
     <h2>🎤 Add Your Song</h2>
     <label>Your Name</label>
     <input type="text" id="nameInput" placeholder="e.g. Andrea" maxlength="40">
-    <label>Song Title (+ artist helps, no need to put "Karaoke")</label>
-    <input type="text" id="songInput" placeholder="e.g. Seasons of Love" maxlength="80">
+    <label>Song Title (+ artist helps)</label>
+    <input type="text" id="songInput" placeholder="e.g. What Was I Made For" maxlength="80">
     <div class="row" style="margin-top:12px;">
       <button class="btn-primary" id="searchBtn">Search YouTube</button>
     </div>
@@ -191,6 +191,52 @@
 
   function startJoin(){
 
+  // ---------- "You're up!" notifications (vibrate + ding + toast) ----------
+  // Tracks the songs THIS device has added (by Firebase push key) so we can tell
+  // when one of them reaches the top of the queue or gets called to the stage.
+  function mySongsKey(){ return "edgemore_mysongs_" + E.getSession(); }
+  function loadMySongs(){
+    try{ return JSON.parse(localStorage.getItem(mySongsKey()) || "{}"); }catch(e){ return {}; }
+  }
+  function saveMySongs(){
+    try{ localStorage.setItem(mySongsKey(), JSON.stringify(mySongs)); }catch(e){}
+  }
+  var mySongs = loadMySongs();
+
+  // Web Audio needs to be "unlocked" by a user gesture on iOS before it can play
+  // later from a background Firebase listener, so we create it once and resume
+  // it on the first tap anywhere on the page.
+  var audioCtx = null;
+  function unlockAudio(){
+    if(audioCtx) return;
+    try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){}
+    document.removeEventListener("pointerdown", unlockAudio);
+  }
+  document.addEventListener("pointerdown", unlockAudio);
+
+  function playDing(){
+    if(!audioCtx) return;
+    try{
+      if(audioCtx.state === "suspended") audioCtx.resume();
+      [880, 1175].forEach(function(freq, i){
+        var o = audioCtx.createOscillator();
+        var g = audioCtx.createGain();
+        o.connect(g); g.connect(audioCtx.destination);
+        o.type = "sine"; o.frequency.value = freq;
+        var start = audioCtx.currentTime + i * 0.16;
+        g.gain.setValueAtTime(0.0001, start);
+        g.gain.exponentialRampToValueAtTime(0.35, start + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, start + 0.5);
+        o.start(start); o.stop(start + 0.5);
+      });
+    }catch(e){}
+  }
+  function notifyUser(msg, pattern){
+    toast(msg);
+    try{ if(navigator.vibrate) navigator.vibrate(pattern); }catch(e){}
+    playDing();
+  }
+
   // ---------- Settings (title/subtitle/skin) ----------
   E.subscribeSettings(function(s){
     document.getElementById("eventTitle").textContent = s.title || "CLUB EDGEMORE KARAOKE";
@@ -239,12 +285,18 @@
         '<div><div class="rtitle">' + E.escapeHtml(snip.title) + '</div>' +
         '<div class="rchannel">' + E.escapeHtml(snip.channelTitle) + '</div></div>';
       div.addEventListener("click", function(){
+        unlockAudio();
         var maxOrder = currentQueue.reduce(function(m,it){ return Math.max(m, it.order||0); }, 0);
-        E.addToQueue(name, song, vid, thumb, maxOrder + 1).then(function(){
+        var pushRef = E.addToQueue(name, song, vid, thumb, maxOrder + 1);
+        mySongs[pushRef.key] = { name: name, song: song, notifiedNext: false, awaitingStage: false };
+        saveMySongs();
+        pushRef.then(function(){
           toast(name + ", you're in the queue for \"" + song + "\"!");
           resultsEl.innerHTML = "";
           nameInput.value = ""; songInput.value = "";
         }).catch(function(err){
+          delete mySongs[pushRef.key];
+          saveMySongs();
           toast("Couldn't add that — try again. (" + err.message + ")");
         });
       });
@@ -262,6 +314,18 @@
     }
     nowBanner.className = "now-banner";
     nowBanner.innerHTML = '<div class="who">🎤 ' + E.escapeHtml(now.name) + '</div><div class="song">' + E.escapeHtml(now.song) + '</div>';
+
+    // If a song we were waiting on just got called to the stage, this is the confirmation ping.
+    var changed = false;
+    Object.keys(mySongs).forEach(function(id){
+      var entry = mySongs[id];
+      if(entry.awaitingStage && entry.name === now.name && entry.song === now.song){
+        notifyUser("🎉 " + entry.name + ", you're on stage now — go go go!", [120,80,120,80,250]);
+        delete mySongs[id];
+        changed = true;
+      }
+    });
+    if(changed) saveMySongs();
   });
 
   var queueListEl = document.getElementById("queueList");
@@ -269,6 +333,29 @@
   E.subscribeQueue(function(arr){
     currentQueue = arr;
     queueCountEl.textContent = arr.length;
+
+    // Check our tracked songs against the fresh queue snapshot for "you're up next!" pings.
+    var topId = arr.length ? arr[0]._id : null;
+    var presentIds = {};
+    arr.forEach(function(it){ presentIds[it._id] = true; });
+    var changed = false;
+    Object.keys(mySongs).forEach(function(id){
+      var entry = mySongs[id];
+      if(presentIds[id]){
+        if(id === topId && !entry.notifiedNext){
+          entry.notifiedNext = true;
+          changed = true;
+          notifyUser("🎤 " + entry.name + ", you're up next! Get ready.", [200,100,200]);
+        }
+      } else if(!entry.awaitingStage){
+        // No longer in the queue — either just called up (confirmed via subscribeNow above)
+        // or removed by the host. Either way, stop expecting it to reach the top again.
+        entry.awaitingStage = true;
+        changed = true;
+      }
+    });
+    if(changed) saveMySongs();
+
     if(!arr.length){
       queueListEl.innerHTML = '<div class="empty">Queue is empty.</div>';
       return;
