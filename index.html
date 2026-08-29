@@ -177,11 +177,12 @@
   }
   .now-card .who{font-size:1.2rem;font-weight:800;color:var(--gold);}
   .now-card .song{color:var(--muted);}
-  .settings-toggle{
-    position:fixed;top:18px;right:18px;
-    background:var(--panel2);border:1px solid rgba(255,255,255,0.1);
-    color:var(--muted);border-radius:50%;width:40px;height:40px;font-size:1.1rem;
-  }
+ .settings-toggle{
+  position:fixed;top:18px;right:18px;
+  background:var(--panel2);border:1px solid rgba(255,255,255,0.1);
+  color:var(--muted);border-radius:50%;width:40px;height:40px;font-size:1.1rem;
+  padding:7px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;
+}
   .settings-panel{
     position:fixed;top:0;right:0;height:100vh;width:340px;max-width:90vw;
     background:#0f0a22;border-left:1px solid rgba(255,255,255,0.1);
@@ -240,10 +241,12 @@
 
   /* ---------- Feedback ---------- */
   .feedback-toggle{
-    position:fixed;top:18px;right:68px;
-    background:var(--panel2);border:1px solid rgba(255,255,255,0.1);
-    color:var(--muted);border-radius:50%;width:40px;height:40px;font-size:1.05rem;
-    cursor:pointer;z-index:45;
+  position:fixed;top:18px;right:68px;
+  background:var(--panel2);border:1px solid rgba(255,255,255,0.1);
+  color:var(--muted);border-radius:50%;width:40px;height:40px;font-size:1.1rem;
+  padding:7px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;
+  cursor:pointer;z-index:45;
+    
   }
   .feedback-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:44;display:none;}
   .feedback-overlay.open{display:block;}
