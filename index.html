@@ -223,6 +223,7 @@
   }
   .badge.warn{background:rgba(255,210,63,0.15);color:var(--gold);border-color:rgba(255,210,63,0.35);}
   .history{margin-top:16px;}
+  .history-list{max-height:340px;overflow-y:auto;padding-right:4px;}
   .history-item{font-size:0.8rem;color:var(--muted);padding:6px 0;border-bottom:1px dashed rgba(255,255,255,0.06);display:flex;justify-content:space-between;gap:10px;}
   .history-item .who-song{flex:1;min-width:0;}
   .history-item b{color:var(--text);}
@@ -346,25 +347,7 @@
   </div>
 
   <div class="grid">
-    <!-- LEFT: Sign up + search -->
-    <div class="card">
-      <h2>📝 Sign Up (from this screen)</h2>
-      <label>Your Name</label>
-      <input type="text" id="nameInput" placeholder="e.g. Leah" maxlength="40">
-      <label>Song Title (+ artist helps, no need to put "Karaoke")</label>
-      <input type="text" id="songInput" placeholder="e.g. Jumper Third Eye Blind" maxlength="80">
-      <div class="row" style="margin-top:12px;">
-        <button class="btn-primary" id="searchBtn">Search YouTube</button>
-      </div>
-      <div class="results" id="results"></div>
-
-      <div class="history" id="historyWrap" style="display:none;">
-        <h2 style="margin-top:20px;">✅ Already Performed</h2>
-        <div id="historyList"></div>
-      </div>
-    </div>
-
-    <!-- RIGHT: Now playing + queue -->
+    <!-- LEFT: Now playing + queue -->
     <div class="card">
       <h2>🎬 Now Playing</h2>
       <div class="now-card" id="nowCard" style="display:none;">
@@ -389,6 +372,25 @@
       <div class="queue-list" id="queueList">
         <div class="empty">No one in the queue yet — be the first!</div>
       </div>
+    </div>
+
+    <!-- RIGHT: Already played + sign up -->
+    <div class="card">
+      <div class="history" id="historyWrap" style="display:none;">
+        <h2>✅ Already Played</h2>
+        <div class="history-list" id="historyList"></div>
+        <div class="hint" id="historyMoreHint"></div>
+      </div>
+
+      <h2 style="margin-top:20px;">📝 Sign Up (from this screen)</h2>
+      <label>Your Name</label>
+      <input type="text" id="nameInput" placeholder="e.g. Leah" maxlength="40">
+      <label>Song Title (+ artist helps)</label>
+      <input type="text" id="songInput" placeholder="e.g. Jumper Third Eye Blind" maxlength="80">
+      <div class="row" style="margin-top:12px;">
+        <button class="btn-primary" id="searchBtn">Search YouTube</button>
+      </div>
+      <div class="results" id="results"></div>
     </div>
   </div>
 </div>
@@ -684,14 +686,17 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     E.reorderQueue(a._id, a.order, b._id, b.order);
   }
 
-  // ---------- History (shared, with date/time) ----------
+  // ---------- History (shared, with date/time) — most recent 15 shown, scrollable ----------
+  var HISTORY_SHOW_MAX = 15;
   var historyWrap = document.getElementById("historyWrap");
   var historyListEl = document.getElementById("historyList");
+  var historyMoreHint = document.getElementById("historyMoreHint");
   E.subscribeHistory(function(items){
     if(!items.length){ historyWrap.style.display = "none"; return; }
     historyWrap.style.display = "block";
+    var shown = items.slice(0, HISTORY_SHOW_MAX);
     historyListEl.innerHTML = "";
-    items.forEach(function(h){
+    shown.forEach(function(h){
       var div = document.createElement("div");
       div.className = "history-item";
       div.innerHTML =
@@ -699,6 +704,8 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
         '<div class="when">' + E.escapeHtml(E.formatDateTime(h.performedAt)) + '</div>';
       historyListEl.appendChild(div);
     });
+    var extra = items.length - shown.length;
+    historyMoreHint.textContent = extra > 0 ? ("+" + extra + " earlier tonight, not shown here") : "";
   });
 
   // ---------- Player (plain iframe embed) ----------
