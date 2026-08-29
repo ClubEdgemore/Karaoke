@@ -21,4 +21,12 @@ var FIREBASE_CONFIG = {
 //    Google Cloud Console (console.cloud.google.com) → APIs & Services → Credentials → Create API key.
 //    Then enable "YouTube Data API v3" for the project, and (recommended) restrict this key
 //    to HTTP referrer "clubedgemore.github.io/*" so it can't be used from other sites.
-var YOUTUBE_API_KEY = "AIzaSyB8xRtmVYnsCr7ETclm-RX3qiqMHmLO7jg";
+var YOUTUBE_API_KEY = "PASTE_YOUTUBE_API_KEY_HERE";
+
+// 3) Feedback form endpoint (optional — powers the 💬 Feedback button on both pages).
+//    This site has no backend, so feedback is emailed to you via Formspree (free):
+//      1. Go to formspree.io → sign up (or log in) with the email you want feedback sent to.
+//      2. "New Form" → give it any name → set the target email → create.
+//      3. Copy the form's endpoint URL (looks like https://formspree.io/f/xxxxxxx) and paste it below.
+//    Leave the placeholder as-is to leave the feedback button disabled with a friendly message.
+var FEEDBACK_FORM_ENDPOINT = "PASTE_FORMSPREE_ENDPOINT_HERE";
